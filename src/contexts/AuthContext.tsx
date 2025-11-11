@@ -1,69 +1,83 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { authService, LoginRequest, SignupRequest } from '@/services/authService';
+import { getToken, getUser, setUser } from '@/config/api';
+import { useToast } from '@/hooks/use-toast';
 
-interface UserAccount {
+interface User {
+  id: string;
   username: string;
-  password: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: string;
+  phone?: string;
 }
 
 interface AuthContextType {
   isAuthenticated: boolean;
-  currentUser: string | null;
-  login: (username: string, password: string) => { success: boolean; error?: string };
-  logout: () => void;
-  signup: (username: string, password: string) => { success: boolean; error?: string };
+  currentUser: User | null;
+  login: (username: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  logout: () => Promise<void>;
+  signup: (data: SignupRequest) => Promise<{ success: boolean; error?: string }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [currentUser, setCurrentUser] = useState<string | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
-    const authStatus = localStorage.getItem('cvms_auth');
-    const user = localStorage.getItem('cvms_user');
-    setIsAuthenticated(authStatus === 'true');
-    setCurrentUser(user);
+    const token = getToken();
+    const user = getUser();
+    if (token && user) {
+      setIsAuthenticated(true);
+      setCurrentUser(user);
+    }
   }, []);
 
-  const signup = (username: string, password: string) => {
-    const accountsJson = localStorage.getItem('cvms_accounts');
-    const accounts: UserAccount[] = accountsJson ? JSON.parse(accountsJson) : [];
-    
-    if (accounts.some(acc => acc.username === username)) {
-      return { success: false, error: 'Username already exists' };
-    }
-    
-    accounts.push({ username, password });
-    localStorage.setItem('cvms_accounts', JSON.stringify(accounts));
-    
-    return { success: true };
-  };
-
-  const login = (username: string, password: string) => {
-    const accountsJson = localStorage.getItem('cvms_accounts');
-    const accounts: UserAccount[] = accountsJson ? JSON.parse(accountsJson) : [];
-    
-    const account = accounts.find(
-      acc => acc.username === username && acc.password === password
-    );
-    
-    if (account) {
-      localStorage.setItem('cvms_auth', 'true');
-      localStorage.setItem('cvms_user', username);
+  const signup = async (data: SignupRequest) => {
+    try {
+      const response = await authService.signup(data);
       setIsAuthenticated(true);
-      setCurrentUser(username);
+      setCurrentUser(response.user);
       return { success: true };
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || 'Signup failed';
+      return { success: false, error: errorMessage };
     }
-    
-    return { success: false, error: 'Invalid username or password' };
   };
 
-  const logout = () => {
-    localStorage.removeItem('cvms_auth');
-    localStorage.removeItem('cvms_user');
-    setIsAuthenticated(false);
-    setCurrentUser(null);
+  const login = async (username: string, password: string) => {
+    try {
+      const response = await authService.login({ username, password });
+      setIsAuthenticated(true);
+      setCurrentUser(response.user);
+      
+      toast({
+        title: "Success",
+        description: `Welcome back, ${response.user.firstName}!`,
+      });
+      
+      return { success: true };
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || 'Invalid credentials';
+      return { success: false, error: errorMessage };
+    }
+  };
+
+  const logout = async () => {
+    try {
+      await authService.logout();
+    } finally {
+      setIsAuthenticated(false);
+      setCurrentUser(null);
+      toast({
+        title: "Logged out",
+        description: "You have been successfully logged out",
+      });
+    }
   };
 
   return (

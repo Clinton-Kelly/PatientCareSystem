@@ -14,7 +14,8 @@ import {
   CheckCircle, 
   AlertTriangle,
   Save,
-  Eye
+  Eye,
+  Shield
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -61,6 +62,13 @@ export default function PreOperative() {
     
     // Additional Notes
     additionalConcerns: "",
+    
+    // Research Consent Section
+    researchConsentGiven: false,
+    dataUsageConsent: false,
+    sampleStorageConsent: false,
+    researchConsentDate: "",
+    researchConsentWitness: "",
     
     // Metadata
     completedBy: "",
@@ -207,6 +215,11 @@ export default function PreOperative() {
         anesthetistConfirmed: false,
         surgeonConfirmed: false,
         additionalConcerns: "",
+        researchConsentGiven: false,
+        dataUsageConsent: false,
+        sampleStorageConsent: false,
+        researchConsentDate: "",
+        researchConsentWitness: "",
         completedBy: "",
         completedAt: "",
       });
@@ -313,6 +326,136 @@ export default function PreOperative() {
               </div>
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Research Data and Sample Consent Section */}
+      <Card className="bg-gradient-card shadow-card border-blue-200">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Shield className="w-5 h-5 text-blue-600" />
+            Research Data & Sample Usage Consent
+          </CardTitle>
+          <CardDescription>
+            Optional consent for research purposes - Does not affect treatment
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex items-start gap-3">
+              <Shield className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+              <div className="text-sm">
+                <p className="font-medium text-foreground">Important Information</p>
+                <p className="text-muted-foreground">
+                  Your decision regarding research consent will not affect your medical treatment in any way. 
+                  You have the right to accept or decline participation in research without impacting the quality 
+                  of care you receive.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div className="flex items-center space-x-3">
+              <Checkbox
+                id="research-consent"
+                checked={checklist.researchConsentGiven}
+                onCheckedChange={(checked) => {
+                  handleCheckboxChange('researchConsentGiven', checked as boolean);
+                  if (!checked) {
+                    // Reset consent options if main consent is withdrawn
+                    handleCheckboxChange('dataUsageConsent', false);
+                    handleCheckboxChange('sampleStorageConsent', false);
+                  }
+                }}
+              />
+              <Label htmlFor="research-consent" className="text-sm font-normal cursor-pointer">
+                I agree to consider participating in research studies
+              </Label>
+            </div>
+
+            {checklist.researchConsentGiven && (
+              <div className="space-y-4 pl-6 border-l-2 border-blue-200 ml-3">
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-3">
+                    <Checkbox
+                      id="data-usage"
+                      checked={checklist.dataUsageConsent}
+                      onCheckedChange={(checked) => 
+                        handleCheckboxChange('dataUsageConsent', checked as boolean)
+                      }
+                    />
+                    <Label htmlFor="data-usage" className="text-sm font-normal cursor-pointer">
+                      I consent to the use of my anonymized medical data for research purposes
+                    </Label>
+                  </div>
+
+                  <div className="flex items-center space-x-3">
+                    <Checkbox
+                      id="sample-storage"
+                      checked={checklist.sampleStorageConsent}
+                      onCheckedChange={(checked) => 
+                        handleCheckboxChange('sampleStorageConsent', checked as boolean)
+                      }
+                    />
+                    <Label htmlFor="sample-storage" className="text-sm font-normal cursor-pointer">
+                      I consent to the storage and future use of my tissue/blood samples for research
+                    </Label>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="consent-date">Consent Date</Label>
+                    <Input
+                      id="consent-date"
+                      type="date"
+                      value={checklist.researchConsentDate}
+                      onChange={(e) => handleInputChange('researchConsentDate', e.target.value)}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="consent-witness">Witness Name (Optional)</Label>
+                    <Input
+                      id="consent-witness"
+                      placeholder="Name of witness"
+                      value={checklist.researchConsentWitness}
+                      onChange={(e) => handleInputChange('researchConsentWitness', e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                {/* Consent Status Badge */}
+                <div className="flex gap-2 mt-4">
+                  {checklist.dataUsageConsent && (
+                    <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                      Data Usage Approved
+                    </Badge>
+                  )}
+                  {checklist.sampleStorageConsent && (
+                    <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                      Sample Storage Approved
+                    </Badge>
+                  )}
+                  {!checklist.dataUsageConsent && !checklist.sampleStorageConsent && (
+                    <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200">
+                      Research Consent Declined
+                    </Badge>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <Separator />
+
+          <div className="text-xs text-muted-foreground space-y-1">
+            <p>• Your treatment will not be affected regardless of your choice</p>
+            <p>• You may withdraw research consent at any time by contacting the research office</p>
+            <p>• All research data will be anonymized to protect your privacy</p>
+            <p>• Separate consent forms will be provided for specific research studies</p>
+          </div>
         </CardContent>
       </Card>
 

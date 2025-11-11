@@ -5,59 +5,18 @@ import { Label } from "@/components/ui/label";
 import { Download, FileText, Table } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { 
-  useLocalPatients, 
-  useLocalVitalData, 
-  useLocalAppointments, 
-  useLocalAnalysis, 
-  useLocalPrescriptions 
-} from "@/hooks/useLocalStorage";
-import { exportToCSV, exportToPDF, PatientReport } from "@/utils/exportUtils";
+import { usePatients } from "@/hooks/usePatients";
+import { useProcedures } from "@/hooks/useProcedures";
 
+// Simplified export component - will be enhanced when backend provides export endpoints
 export default function ExportData() {
   const [selectedPatient, setSelectedPatient] = useState("");
   const [exportType, setExportType] = useState("");
   const { toast } = useToast();
-  
-  const { patients } = useLocalPatients();
-  const { getVitalDataByPatient } = useLocalVitalData();
-  const { appointments } = useLocalAppointments();
-  const { getAnalysesByPatient } = useLocalAnalysis();
-  const { getPrescriptionsByPatient } = useLocalPrescriptions();
+  const { patients } = usePatients();
+  const { procedures } = useProcedures();
 
-  const generatePatientReport = (patientId: string): PatientReport | null => {
-    const patient = patients.find(p => p.id === patientId);
-    if (!patient) return null;
-
-    // Get all prescriptions (from both old and new format)
-    const allPrescriptions = JSON.parse(localStorage.getItem('cvms_prescriptions') || '[]');
-    const patientPrescriptions = allPrescriptions.filter((p: any) => p.patient_id === patientId);
-
-    return {
-      patient,
-      vitalData: getVitalDataByPatient(patientId),
-      appointments: appointments.filter(a => a.patient_id === patientId),
-      analyses: getAnalysesByPatient(patientId),
-      prescriptions: patientPrescriptions
-    };
-  };
-
-  const generateAllPatientsReport = (): PatientReport[] => {
-    return patients.map(patient => {
-      const allPrescriptions = JSON.parse(localStorage.getItem('cvms_prescriptions') || '[]');
-      const patientPrescriptions = allPrescriptions.filter((p: any) => p.patient_id === patient.id);
-      
-      return {
-        patient,
-        vitalData: getVitalDataByPatient(patient.id),
-        appointments: appointments.filter(a => a.patient_id === patient.id),
-        analyses: getAnalysesByPatient(patient.id),
-        prescriptions: patientPrescriptions
-      };
-    });
-  };
-
-  const handleExport = () => {
+  const handleExport = async () => {
     if (!exportType) {
       toast({
         title: "Error",
@@ -67,46 +26,20 @@ export default function ExportData() {
       return;
     }
 
-    try {
-      let data: PatientReport[] = [];
-      let filename = "";
-
-      if (selectedPatient === "all") {
-        data = generateAllPatientsReport();
-        filename = `all_patients_report_${new Date().toISOString().split('T')[0]}`;
-      } else if (selectedPatient) {
-        const patientReport = generatePatientReport(selectedPatient);
-        if (patientReport) {
-          data = [patientReport];
-          filename = `${patientReport.patient.first_name}_${patientReport.patient.last_name}_report_${new Date().toISOString().split('T')[0]}`;
-        }
-      } else {
-        toast({
-          title: "Error",
-          description: "Please select a patient or 'All Patients'",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      if (data.length === 0) {
-        toast({
-          title: "Error",
-          description: "No data to export",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      if (exportType === "pdf") {
-        exportToPDF(data, `${filename}.pdf`);
-      } else if (exportType === "csv") {
-        exportToCSV(data, `${filename}.csv`);
-      }
-
+    if (!selectedPatient) {
       toast({
-        title: "Export Successful",
-        description: `Data exported as ${exportType.toUpperCase()} successfully`,
+        title: "Error",
+        description: "Please select a patient",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      // TODO: Call backend export API endpoint
+      toast({
+        title: "Export Pending",
+        description: "Backend export functionality will be implemented when Spring Boot API is connected",
       });
     } catch (error) {
       toast({
@@ -134,10 +67,9 @@ export default function ExportData() {
             <Label htmlFor="patient-select">Select Patient</Label>
             <Select value={selectedPatient} onValueChange={setSelectedPatient}>
               <SelectTrigger>
-                <SelectValue placeholder="Choose patient or all patients" />
+                <SelectValue placeholder="Choose patient" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Patients</SelectItem>
                 {patients.map((patient) => (
                   <SelectItem key={patient.id} value={patient.id}>
                     {patient.first_name} {patient.last_name} - {patient.patient_id}
@@ -191,6 +123,11 @@ export default function ExportData() {
           <Download className="w-4 h-4 mr-2" />
           Export Data
         </Button>
+
+        <div className="text-xs text-muted-foreground border border-border rounded-lg p-3 bg-muted/50">
+          <p className="font-semibold mb-1">Note:</p>
+          <p>Export functionality will be fully enabled when connected to Spring Boot backend API.</p>
+        </div>
       </CardContent>
     </Card>
   );

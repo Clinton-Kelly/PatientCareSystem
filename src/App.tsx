@@ -13,6 +13,7 @@ import PatientOnboarding from "@/pages/PatientOnboarding";
 import VitalDataCollection from "@/pages/VitalDataCollection";
 import AppointmentBooking from "@/pages/AppointmentBooking";
 import DoctorAnalysis from "@/pages/DoctorAnalysis";
+import DecisionMaking from "@/pages/DecisionMaking";
 import LabTests from "@/pages/LabTests";
 import Prescriptions from "@/pages/Prescriptions";
 import Pharmacy from "@/pages/Pharmacy";
@@ -21,6 +22,7 @@ import PreOperative from "@/pages/PreOperative";
 import DuringOperation from "@/pages/DuringOperation";
 import SurgeryTracking from "@/pages/SurgeryTracking";
 import PostOperative from "@/pages/PostOperative";
+import IntensiveCare from "@/pages/IntensiveCare";
 import RecordsManagement from "@/pages/RecordsManagement";
 import PatientFollowup from "@/pages/PatientFollowup";
 import DataExport from "@/pages/DataExport";
@@ -76,6 +78,7 @@ function AppContent() {
           <Route path="/vitals" element={<ProtectedRoute><DashboardLayout title="Vital Data Collection" subtitle="Record vital signs"><VitalDataCollection /></DashboardLayout></ProtectedRoute>} />
           <Route path="/appointments" element={<ProtectedRoute><DashboardLayout title="Appointment Booking" subtitle="Schedule consultations"><AppointmentBooking /></DashboardLayout></ProtectedRoute>} />
           <Route path="/analysis" element={<ProtectedRoute><DashboardLayout title="Doctor Analysis" subtitle="Assessment & diagnosis"><DoctorAnalysis /></DashboardLayout></ProtectedRoute>} />
+          <Route path="/decision" element={<ProtectedRoute><DashboardLayout title="Decision Making" subtitle="Surgery Decision"><DecisionMaking /></DashboardLayout></ProtectedRoute>} />
           <Route path="/lab-tests" element={<ProtectedRoute><DashboardLayout title="Laboratory Tests" subtitle="Order & manage diagnostic tests"><LabTests /></DashboardLayout></ProtectedRoute>} />
           <Route path="/prescriptions" element={<ProtectedRoute><DashboardLayout title="Prescriptions" subtitle="Medication management"><Prescriptions /></DashboardLayout></ProtectedRoute>} />
           <Route path="/pharmacy" element={<ProtectedRoute><DashboardLayout title="Pharmacy" subtitle="Drug dispensing & collection"><Pharmacy /></DashboardLayout></ProtectedRoute>} />
@@ -84,6 +87,7 @@ function AppContent() {
           <Route path="/during-operation" element={<ProtectedRoute><DashboardLayout title="During Operation" subtitle="Intra-operative monitoring"><DuringOperation /></DashboardLayout></ProtectedRoute>} />
           <Route path="/surgery-tracking" element={<ProtectedRoute><DashboardLayout title="Surgery Tracking" subtitle="Monitor surgical procedures"><SurgeryTracking /></DashboardLayout></ProtectedRoute>} />
           <Route path="/post-operative" element={<ProtectedRoute><DashboardLayout title="Post-Operative" subtitle="Recovery tracking"><PostOperative /></DashboardLayout></ProtectedRoute>} />
+          <Route path="/intensive-care" element={<ProtectedRoute><DashboardLayout title="Intensive Care" subtitle="Critical care management"><IntensiveCare /></DashboardLayout></ProtectedRoute>} />
           <Route path="/records" element={<ProtectedRoute><DashboardLayout title="Patient Records" subtitle="Complete history & export"><RecordsManagement /></DashboardLayout></ProtectedRoute>} />
           <Route path="/followup" element={<ProtectedRoute><DashboardLayout title="Follow-up" subtitle="Patient follow-up care"><PatientFollowup /></DashboardLayout></ProtectedRoute>} />
           <Route path="/data-export" element={<ProtectedRoute><DashboardLayout title="Data Export" subtitle="Export patient data for research"><DataExport /></DashboardLayout></ProtectedRoute>} />

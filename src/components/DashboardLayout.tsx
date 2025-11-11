@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import { useAuth } from "@/hooks/useLocalStorage";
+import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 
 interface DashboardLayoutProps {
@@ -25,8 +25,8 @@ export function DashboardLayout({ children, title, subtitle }: DashboardLayoutPr
   const { currentUser, logout } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     navigate('/auth');
   };
 
@@ -107,15 +107,15 @@ export function DashboardLayout({ children, title, subtitle }: DashboardLayoutPr
                         <User className="w-4 h-4 text-white" />
                       </div>
                       <div className="hidden md:block text-left">
-                        <p className="text-sm font-medium capitalize">{currentUser || 'User'}</p>
-                        <p className="text-xs text-muted-foreground">Healthcare Professional</p>
+                        <p className="text-sm font-medium capitalize">{currentUser?.firstName || currentUser?.username || 'User'}</p>
+                        <p className="text-xs text-muted-foreground">{currentUser?.role || 'Healthcare Professional'}</p>
                       </div>
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuLabel>My Account</DropdownMenuLabel>
                     <DropdownMenuLabel className="font-normal text-muted-foreground">
-                      Logged in as: {currentUser}
+                      Logged in as: {currentUser?.username || currentUser?.email}
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem>

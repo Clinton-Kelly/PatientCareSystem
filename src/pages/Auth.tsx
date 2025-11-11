@@ -31,7 +31,7 @@ export default function Auth() {
     setLoading(true);
 
     try {
-      const result = login(username, password);
+      const result = await login(username, password);
       if (result.success) {
         toast({
           title: "Access Granted",
@@ -81,7 +81,14 @@ export default function Auth() {
         return;
       }
 
-      const result = signup(username, password);
+      const result = await signup({
+        username,
+        email: `${username}@cvms.local`,
+        password,
+        firstName: username,
+        lastName: 'User',
+        role: 'DOCTOR',
+      });
       if (result.success) {
         toast({
           title: "Account Created",

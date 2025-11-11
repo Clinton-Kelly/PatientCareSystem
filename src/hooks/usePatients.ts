@@ -1,24 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { patientsService, Patient, CreatePatientRequest } from '@/services/patientsService';
 
-export interface Patient {
-  id: string;
-  patient_id: string;
-  first_name: string;
-  last_name: string;
-  date_of_birth: string;
-  gender?: string;
-  phone?: string;
-  email?: string;
-  address?: string;
-  emergency_contact_name?: string;
-  emergency_contact_phone?: string;
-  medical_history?: string;
-  allergies?: string;
-  current_medications?: string;
-  created_at: string;
-  updated_at: string;
-}
+export type { Patient };
 
 export function usePatients() {
   const [patients, setPatients] = useState<Patient[]>([]);
@@ -27,9 +11,9 @@ export function usePatients() {
 
   const fetchPatients = async () => {
     try {
-      const storedPatients = localStorage.getItem('patients');
-      const patients = storedPatients ? JSON.parse(storedPatients) : [];
-      setPatients(patients);
+      setLoading(true);
+      const data = await patientsService.getAll();
+      setPatients(data);
     } catch (error) {
       console.error('Error fetching patients:', error);
       toast({
@@ -42,21 +26,10 @@ export function usePatients() {
     }
   };
 
-  const addPatient = async (patientData: Omit<Patient, 'id' | 'created_at' | 'updated_at'>) => {
+  const addPatient = async (patientData: CreatePatientRequest) => {
     try {
-      const newPatient: Patient = {
-        ...patientData,
-        id: crypto.randomUUID(),
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      };
-
-      const storedPatients = localStorage.getItem('patients');
-      const patients = storedPatients ? JSON.parse(storedPatients) : [];
-      const updatedPatients = [newPatient, ...patients];
-      
-      localStorage.setItem('patients', JSON.stringify(updatedPatients));
-      setPatients(updatedPatients);
+      const newPatient = await patientsService.create(patientData);
+      setPatients(prev => [newPatient, ...prev]);
       
       toast({
         title: "Success",
@@ -76,17 +49,8 @@ export function usePatients() {
 
   const updatePatient = async (id: string, patientData: Partial<Patient>) => {
     try {
-      const storedPatients = localStorage.getItem('patients');
-      const patients = storedPatients ? JSON.parse(storedPatients) : [];
-      
-      const updatedPatients = patients.map((p: Patient) => 
-        p.id === id ? { ...p, ...patientData, updated_at: new Date().toISOString() } : p
-      );
-      
-      localStorage.setItem('patients', JSON.stringify(updatedPatients));
-      setPatients(updatedPatients);
-      
-      const updatedPatient = updatedPatients.find((p: Patient) => p.id === id);
+      const updatedPatient = await patientsService.update(id, patientData);
+      setPatients(prev => prev.map(p => p.id === id ? updatedPatient : p));
       
       toast({
         title: "Success",
@@ -106,12 +70,8 @@ export function usePatients() {
 
   const deletePatient = async (id: string) => {
     try {
-      const storedPatients = localStorage.getItem('patients');
-      const patients = storedPatients ? JSON.parse(storedPatients) : [];
-      
-      const updatedPatients = patients.filter((p: Patient) => p.id !== id);
-      localStorage.setItem('patients', JSON.stringify(updatedPatients));
-      setPatients(updatedPatients);
+      await patientsService.delete(id);
+      setPatients(prev => prev.filter(p => p.id !== id));
       
       toast({
         title: "Success",
@@ -131,17 +91,8 @@ export function usePatients() {
   const searchPatients = async (query: string) => {
     try {
       setLoading(true);
-      const storedPatients = localStorage.getItem('patients');
-      const allPatients = storedPatients ? JSON.parse(storedPatients) : [];
-      
-      const filteredPatients = allPatients.filter((patient: Patient) =>
-        patient.first_name.toLowerCase().includes(query.toLowerCase()) ||
-        patient.last_name.toLowerCase().includes(query.toLowerCase()) ||
-        patient.patient_id.toLowerCase().includes(query.toLowerCase()) ||
-        (patient.email && patient.email.toLowerCase().includes(query.toLowerCase()))
-      );
-      
-      setPatients(filteredPatients);
+      const data = await patientsService.search(query);
+      setPatients(data);
     } catch (error) {
       console.error('Error searching patients:', error);
       toast({

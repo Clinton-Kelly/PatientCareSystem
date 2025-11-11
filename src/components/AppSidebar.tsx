@@ -63,6 +63,12 @@ const navigationItems = [
     description: "Assessment & diagnosis"
   },
   {
+    title: "Decision Making",
+    url: "/decision",
+    icon: Stethoscope,
+    description: "Surgery Decision"
+  },
+  {
     title: "Lab Tests",
     url: "/lab-tests",
     icon: Activity,
@@ -103,6 +109,12 @@ const navigationItems = [
     url: "/post-operative",
     icon: Clock,
     description: "Recovery tracking"
+  },
+  {
+    title: "Intensive Care Unit",
+    url: "/intensive-care",
+    icon: Database,
+    description: "Capture ICU Vitals"
   },
   {
     title: "Patient Records",

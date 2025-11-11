@@ -1,31 +1,8 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { proceduresService, SurgicalProcedure, CreateProcedureRequest } from '@/services/proceduresService';
 
-export interface SurgicalProcedure {
-  id: string;
-  patient_id: string;
-  procedure_name: string;
-  procedure_type?: string;
-  scheduled_date?: string;
-  actual_date?: string;
-  duration_minutes?: number;
-  surgeon_name?: string;
-  assistant_surgeon?: string;
-  anesthesia_type?: string;
-  pre_operative_notes?: string;
-  operative_notes?: string;
-  post_operative_notes?: string;
-  complications?: string;
-  status: string;
-  created_at: string;
-  updated_at: string;
-  patients?: {
-    first_name: string;
-    last_name: string;
-    patient_id: string;
-  };
-}
+export type { SurgicalProcedure };
 
 export function useProcedures() {
   const [procedures, setProcedures] = useState<SurgicalProcedure[]>([]);
@@ -34,20 +11,9 @@ export function useProcedures() {
 
   const fetchProcedures = async () => {
     try {
-      const { data, error } = await supabase
-        .from('surgical_procedures')
-        .select(`
-          *,
-          patients (
-            first_name,
-            last_name,
-            patient_id
-          )
-        `)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setProcedures(data || []);
+      setLoading(true);
+      const data = await proceduresService.getAll();
+      setProcedures(data);
     } catch (error) {
       console.error('Error fetching procedures:', error);
       toast({
@@ -60,32 +26,16 @@ export function useProcedures() {
     }
   };
 
-  const addProcedure = async (procedureData: Omit<SurgicalProcedure, 'id' | 'created_at' | 'updated_at' | 'patients'>) => {
+  const addProcedure = async (procedureData: CreateProcedureRequest) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
-
-      const { data, error } = await supabase
-        .from('surgical_procedures')
-        .insert([{ ...procedureData, user_id: user.id }])
-        .select(`
-          *,
-          patients (
-            first_name,
-            last_name,
-            patient_id
-          )
-        `)
-        .single();
-
-      if (error) throw error;
-
-      setProcedures(prev => [data, ...prev]);
+      const newProcedure = await proceduresService.create(procedureData);
+      setProcedures(prev => [newProcedure, ...prev]);
+      
       toast({
         title: "Success",
         description: "Procedure added successfully",
       });
-      return data;
+      return newProcedure;
     } catch (error) {
       console.error('Error adding procedure:', error);
       toast({
@@ -99,28 +49,14 @@ export function useProcedures() {
 
   const updateProcedure = async (id: string, procedureData: Partial<SurgicalProcedure>) => {
     try {
-      const { data, error } = await supabase
-        .from('surgical_procedures')
-        .update(procedureData)
-        .eq('id', id)
-        .select(`
-          *,
-          patients (
-            first_name,
-            last_name,
-            patient_id
-          )
-        `)
-        .single();
-
-      if (error) throw error;
-
-      setProcedures(prev => prev.map(p => p.id === id ? data : p));
+      const updatedProcedure = await proceduresService.update(id, procedureData);
+      setProcedures(prev => prev.map(p => p.id === id ? updatedProcedure : p));
+      
       toast({
         title: "Success",
         description: "Procedure updated successfully",
       });
-      return data;
+      return updatedProcedure;
     } catch (error) {
       console.error('Error updating procedure:', error);
       toast({
@@ -134,14 +70,9 @@ export function useProcedures() {
 
   const deleteProcedure = async (id: string) => {
     try {
-      const { error } = await supabase
-        .from('surgical_procedures')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-
+      await proceduresService.delete(id);
       setProcedures(prev => prev.filter(p => p.id !== id));
+      
       toast({
         title: "Success",
         description: "Procedure deleted successfully",
