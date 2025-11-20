@@ -16,6 +16,9 @@ export const API_ENDPOINTS = {
     BASE: '/patients',
     BY_ID: (id: string) => `/patients/${id}`,
     SEARCH: '/patients/search',
+    CONSENT: (id: string) => `/patients/${id}/consent`,
+    EXPORT_EXCEL: '/patients/export/excel',
+    EXPORT_PDF: '/patients/export/pdf',
   },
   // Procedures
   PROCEDURES: {

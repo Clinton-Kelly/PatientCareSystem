@@ -225,6 +225,8 @@ Authorization: Bearer <token>
   "medical_history": "text",
   "allergies": "text",
   "current_medications": "text",
+  "research_consent": "boolean",
+  "research_consent_date": "ISO 8601 datetime",
   "created_at": "ISO 8601 datetime",
   "updated_at": "ISO 8601 datetime"
 }
@@ -259,7 +261,9 @@ Authorization: Bearer <token>
   "emergency_contact_phone": "string",
   "medical_history": "text",
   "allergies": "text",
-  "current_medications": "text"
+  "current_medications": "text",
+  "research_consent": "boolean (optional, default: false)",
+  "research_consent_date": "ISO 8601 datetime (auto-generated if consent is true)"
 }
 ```
 
@@ -356,6 +360,107 @@ Authorization: Bearer <token>
   }
 ]
 ```
+
+---
+
+#### PATCH /api/patients/{id}/consent
+Update patient's research data consent (requires ADMIN, DOCTOR, or NURSE role).
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Request Body:**
+```json
+{
+  "research_consent": "boolean (required)",
+  "research_consent_date": "ISO 8601 datetime (auto-generated if not provided)"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "id": "uuid",
+  "patient_id": "string",
+  // ... all patient fields including updated consent
+  "research_consent": "boolean",
+  "research_consent_date": "ISO 8601 datetime"
+}
+```
+
+**Errors:**
+- 404: Patient not found
+- 403: Forbidden (requires ADMIN, DOCTOR, or NURSE role)
+
+---
+
+#### POST /api/patients/export/excel
+Export patient data to Excel format (REDCap-style export). Only exports data for patients who have consented to research data use.
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Request Body:**
+```json
+{
+  "patientIds": ["uuid1", "uuid2"] // Optional - if empty, exports all consented patients
+}
+```
+
+**Response (200 OK):**
+- Content-Type: `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`
+- Returns Excel (.xlsx) file with comprehensive patient data
+
+**Export Contents:**
+- Patient demographics and contact information
+- Medical history and current conditions
+- Allergies and current medications
+- Emergency contact information
+- Research consent status and date
+
+**Errors:**
+- 403: Forbidden (requires ADMIN, DOCTOR, or NURSE role)
+- 400: Invalid request (e.g., no consented patients found)
+
+**Security Note:**
+Only patients with `research_consent = true` will be included in exports. All data is anonymized according to HIPAA regulations.
+
+---
+
+#### POST /api/patients/export/pdf
+Export patient data to PDF format. Only exports data for patients who have consented to research data use.
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Request Body:**
+```json
+{
+  "patientIds": ["uuid1", "uuid2"] // Optional - if empty, exports all consented patients
+}
+```
+
+**Response (200 OK):**
+- Content-Type: `application/pdf`
+- Returns PDF report with patient summary data
+
+**Export Contents:**
+- Patient demographics summary table
+- Research consent status
+- Basic medical information
+
+**Errors:**
+- 403: Forbidden (requires ADMIN, DOCTOR, or NURSE role)
+- 400: Invalid request (e.g., no consented patients found)
+
+**Security Note:**
+Only patients with `research_consent = true` will be included in exports. All data is anonymized according to HIPAA regulations.
 
 ---
 

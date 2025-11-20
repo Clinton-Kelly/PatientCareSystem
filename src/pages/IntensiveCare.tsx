@@ -309,7 +309,7 @@ export default function ICUPage() {
           ]
         };
         setIcuData(initialData);
-        setCurrentVitals(initialData.monitoring[0]);
+        setCurrentVitals(initialData.monitoring[0] as any);
         saveICUData(initialData);
       }
     } catch (error) {

@@ -135,8 +135,8 @@ export default function PatientOnboarding() {
   };
 
   // Handle form submission from PatientForm component
-  const handlePatientFormSubmit = (patientData: any) => {
-    handleSubmitWithConsent(patientData);
+  const handlePatientFormSubmit = async (patientData: any) => {
+    await handleSubmitWithConsent(patientData);
   };
 
   const sampleTypeOptions = [

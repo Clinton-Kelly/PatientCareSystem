@@ -33,6 +33,7 @@ export default function PatientForm({ onSubmit, initialData, isEdit = false, tri
     medical_history: initialData?.medical_history || '',
     allergies: initialData?.allergies || '',
     current_medications: initialData?.current_medications || '',
+    research_consent: initialData?.research_consent || false,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -60,6 +61,7 @@ export default function PatientForm({ onSubmit, initialData, isEdit = false, tri
           medical_history: '',
           allergies: '',
           current_medications: '',
+          research_consent: false,
         });
       }
     } catch (error) {
@@ -233,6 +235,24 @@ export default function PatientForm({ onSubmit, initialData, isEdit = false, tri
               placeholder="Current medications and dosages..."
               rows={3}
             />
+          </div>
+          
+          <div className="flex items-start space-x-2 border border-border rounded-md p-4 bg-muted/30">
+            <input
+              type="checkbox"
+              id="research_consent"
+              checked={formData.research_consent}
+              onChange={(e) => setFormData(prev => ({ ...prev, research_consent: e.target.checked }))}
+              className="mt-1 h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+            />
+            <div className="flex-1">
+              <Label htmlFor="research_consent" className="font-semibold cursor-pointer">
+                Research Data Consent
+              </Label>
+              <p className="text-sm text-muted-foreground mt-1">
+                I consent to have my anonymized medical data used for research purposes to improve cardiovascular care and treatment outcomes. This data will be handled in accordance with HIPAA regulations and institutional review board guidelines.
+              </p>
+            </div>
           </div>
           
           <div className="flex justify-end gap-2">

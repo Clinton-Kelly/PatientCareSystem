@@ -15,6 +15,8 @@ export interface Patient {
   medical_history?: string;
   allergies?: string;
   current_medications?: string;
+  research_consent?: boolean;
+  research_consent_date?: string;
   created_at: string;
   updated_at: string;
 }
@@ -33,6 +35,8 @@ export interface CreatePatientRequest {
   medical_history?: string;
   allergies?: string;
   current_medications?: string;
+  research_consent?: boolean;
+  research_consent_date?: string;
 }
 
 export const patientsService = {
@@ -64,6 +68,32 @@ export const patientsService = {
     const response = await apiClient.get<Patient[]>(API_ENDPOINTS.PATIENTS.SEARCH, {
       params: { q: query },
     });
+    return response.data;
+  },
+
+  async updateConsent(id: string, consent: boolean): Promise<Patient> {
+    const response = await apiClient.patch<Patient>(
+      API_ENDPOINTS.PATIENTS.CONSENT(id),
+      { research_consent: consent, research_consent_date: new Date().toISOString() }
+    );
+    return response.data;
+  },
+
+  async exportToExcel(patientIds?: string[]): Promise<Blob> {
+    const response = await apiClient.post(
+      API_ENDPOINTS.PATIENTS.EXPORT_EXCEL,
+      { patientIds },
+      { responseType: 'blob' }
+    );
+    return response.data;
+  },
+
+  async exportToPDF(patientIds?: string[]): Promise<Blob> {
+    const response = await apiClient.post(
+      API_ENDPOINTS.PATIENTS.EXPORT_PDF,
+      { patientIds },
+      { responseType: 'blob' }
+    );
     return response.data;
   },
 };

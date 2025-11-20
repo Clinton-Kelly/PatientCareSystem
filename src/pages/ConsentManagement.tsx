@@ -608,7 +608,10 @@ export default function ConsentManagement() {
                           />
                           <Button 
                             variant="outline" 
-                            onClick={() => document.querySelector('input[type="file"]')?.click()}
+                            onClick={() => {
+                              const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+                              input?.click();
+                            }}
                             className="bg-white"
                           >
                             <Scan className="w-4 h-4 mr-2" />
